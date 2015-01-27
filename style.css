@@ -2,20 +2,29 @@ body {
 	background: rgb(232, 232,232);
 }
 
-.mine {
-	
-	border: red solid thin;
-}
-.flagged {
 
-	background: red;
+main table{
+	margin: auto;
 }
  
+.info {
+	float: right;
+}
+
 .gamebutton {
+	border: transparent solid thick;
 	background: rgb(58,137,212);
 	-webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
   -moz-box-sizing: border-box;    /* Firefox, other Gecko */
   box-sizing: border-box; 
+}
+.mine {
+	
+	border: red solid thick;
+}
+.flagged {
+
+	background: red;
 }
 
 .clicked {

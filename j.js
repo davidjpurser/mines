@@ -9,12 +9,19 @@ $(document).ready(function() {
     var DEFAULT = 0;
     var game = null;
     var buttons = null;
+    var oked = 0;
+    var mines = 0;
+    var time = 0;
+    var interval = null;
+    var gamerunning  = false;
     $('#generate').click(function() {
-
+        $('.configure').hide();
         var width = parseInt($('#width').val());
         var height = parseInt($('#height').val());
-        var mines = parseInt($('#mines').val());
+        mines = parseInt($('#mines').val());
+        oked = 0;
         game = Create2DArray(height, width);
+        gamerunning = true;
         buttons = Create2DArray(height, width);
         game = fillMines(game, width, height, mines);
         var table= $('<table />');
@@ -35,10 +42,54 @@ $(document).ready(function() {
             table.append(row);
         }
         $('main').html('').append(table);
+        checkWin(game);
+
+        var d = new Date();
+        time = d.getTime(); 
+        maintainTime();
+        interval = setInterval(maintainTime, 1000);
+        
     });
+
     $('#generate').click();
 
-    $('main button').on('click', function() {
+    $('input[name=game]').on('change',function() {
+
+        if ($(this).val() == "c") {
+            $('.custom').show();
+        } else {
+            $('.custom').hide();
+            var width = 0;
+            var height = 0;
+            var mines = 0;
+            switch($(this).val()) {
+                case "s":
+                    width = height = 8;
+                    mines = 10;
+                break;
+                case "m":
+                    width = height = 16;
+                    mines = 40;
+                break;
+                case "l":
+                    width = 31;
+                    height = 16;
+                    mines = 99;
+                break;
+            }
+            $('#width').val(width);
+            $('#height').val(height);
+            $('#mines').val(mines);
+        }
+    });
+
+    $('#toggle').click(function(){
+        $('.configure').toggle();
+    }) ;
+
+    $('main').on('click','button', function() {
+        if (!gamerunning)
+            return false;
         var button = $(this);
         var i = button.data('row');
         var j = button.data('column');
@@ -54,26 +105,35 @@ $(document).ready(function() {
             var badflagcount = getAdjecentBadFlagCount(game, i, j);
             console.log(minecount,goodflagcount,badflagcount);
 
-            if (minecount == goodflagcount && badflagcount == 0) {
-                alert('propergate');
+            if (minecount == goodflagcount + badflagcount) {
+                if (minecount == goodflagcount && badflagcount == 0) {
+
+                    var propergationlist = [];
+                    getAdjecentCount(game, i , j, function(game, r, c) {
+                        if (!isClicked(game, r, c) && !isFlagged(game, r, c)) {
+                            propergationlist.push([r, c]);
+                        }
+                        return true;
+                    });
+                    propergate(game, buttons, propergationlist);
+                } else {
+                    gameDie();
+                }
             } else {
-                gameDie();
+                console.log('cant count');
             }
 
         } else {
-            button.html(getAdjecentMineCount(game, i, j));
-            button.data('clicked', true);
-            game[i][j] = CLICKED;
-
-            if (getAdjecentMineCount(game, i, j) == 0) {
-                alert('propergate');
-            }
+            propergate(game, buttons, [[i,j]]);
         }
 
         format(game, button);
+        checkWin(game);
     });
 
-    $('main button').on('contextmenu', function() {
+    $('main').on('contextmenu','button', function() {
+        if (!gamerunning)
+            return false;
         var button = $(this);
         var i = button.data('row');
         var j = button.data('column');
@@ -83,21 +143,112 @@ $(document).ready(function() {
         } else if (game[i][j] == BADFLAG){
             game[i][j] = DEFAULT;
         } else {
-
             if (isMine(game, i, j)) {
                  game[i][j] = GOODFLAG;
              } else {
                  game[i][j] = BADFLAG;
              }
-
         }
-
+        format(game, button);
+        checkWin(game);
         return false;
     });
 
+    $(window).on('resize', reformater);
+
+    function reformater() {
+        for (var i = 0; i < game.length; i++ ){ 
+            for(var j = 0; j < game[i].length; j++) {
+                format(game, buttons[i][j]);
+            }
+        }
+    }
+
+    function maintainTime() {
+        var d = new Date();
+       var newtime = d.getTime();
+       var diff = newtime - time;
+       $('#timer').html(Math.round(diff / 1000) + "s");
+
+    }
+
+    function setClicked(game, r, c) {
+        if (game[r][c] !== CLICKED) {
+            game[r][c] = CLICKED;
+            oked++;
+        }
+    }
+
+    function checkWin(game) {
+        if (game.length * game[0].length - oked === mines) {
+            clearInterval(interval);
+            maintainTime();
+            gamerunning = false;
+            alert('win');
+        }
+        $('#safe').html(oked + "/" + (game.length * game[0].length - mines));
+    }
+
+    function propergate(game, buttons, propergationlist) {
+        console.log('propergate', propergationlist);
+
+        propergationlist.forEach(function(item) {
+
+            if (getAdjecentMineCount(game, item[0], item[1]) == 0) {
+
+                var queue = [item];
+                while (queue.length > 0) {
+
+                    var top = queue.pop();
+                    var i = top[0];
+                    var j = top[1];
+                     
+                    if (isClicked(game,i , j)) {
+
+                    } else if (getAdjecentMineCount(game, i, j) != 0) {
+                        setClicked(game, i, j);
+                        format(game, buttons[i][j]);
+             
+                    } else {
+                        var trackLeft = j;
+                        var trackRight = j;
+                        setClicked(game, i, j);
+                        format(game, buttons[i][j]);
+                        [-1, 1].forEach(function(direction){
+                            trackLeft += direction;
+                            while(inBounds(game, i, trackLeft) && getAdjecentMineCount(game, i, trackLeft) == 0) {
+
+                                setClicked(game, i, trackLeft);
+                                format(game, buttons[i][trackLeft]);
+                                if (inBounds(game, i+1, trackLeft)) {
+                                    queue.push([i+1, trackLeft])
+                                }
+                                if (inBounds(game, i-1, trackLeft)) {
+                                    queue.push([i-1, trackLeft])
+                                }
+                                trackLeft += direction;
+                            }
+
+                            if (inBounds(game, i+1, trackLeft)) {
+                                queue.push([i+1, trackLeft])
+                            }
+                            if (inBounds(game, i-1, trackLeft)) {
+                                queue.push([i-1, trackLeft])
+                            }
+                            if (inBounds(game, i, trackLeft)) {
+                                queue.push([i, trackLeft])
+                            }
+                        });
+                    }
+                }
+
+            }
+
+            setClicked(game, item[0], item[1]);
+            format(game, buttons[item[0]][item[1]]);
+        });
+    }
     
-
-
     function isFlagged(game, row, column) {
         return game[row][column] == GOODFLAG || game[row][column] == BADFLAG;
     }
@@ -120,8 +271,6 @@ $(document).ready(function() {
 
     function getAdjecentCount(game, row, column, counter) {
          var count = 0;
-        var maxwidth = game[0].length;
-        var maxheight = game.length;
         for (var i = -1; i < 2; i++) {
             for (var j = -1; j< 2; j ++){
                 if (i==0 && j == 0) {
@@ -129,15 +278,23 @@ $(document).ready(function() {
                 }
                 var r = row + i;
                 var c = column + j;
-                if (r >= 0 && c >= 0 && r < maxheight && c < maxwidth) {
-                    if (counter(game, r, c)){
-                        count ++;
-                    }
+                if (inBounds(game, r, c) && counter(game, r, c)){
+                    count ++;
                 }
 
             }
         }
         return count;
+    }
+
+    function inBounds(game, r, c) {
+        var maxwidth = game[0].length;
+        var maxheight = game.length;
+       
+        if (r >= 0 && c >= 0 && r < maxheight && c < maxwidth) {
+          return true;
+        } 
+        return false;
     }
 
     function format(game, button) {
@@ -147,8 +304,10 @@ $(document).ready(function() {
         var width = $(window).width();
         var height = $(window).height();
         
-        var buttonWidth = (width - 100) / game[0].length - 5;
-        var buttonHeight = (height - 100) / game.length - 5;
+        var headerHeight = $('header').height() + 25;
+
+        var buttonWidth = (width - 50) / game[0].length - 5;
+        var buttonHeight = (height - headerHeight) / game.length - 5;
         var dim = Math.min(buttonWidth, buttonHeight);
         button.css("width", dim);
         button.css("height", dim);        
@@ -157,15 +316,18 @@ $(document).ready(function() {
         button.addClass('gamebutton');
 
         //For testings
-        if (isMine(game, i, j)) {
+        if (isMine(game, i, j) && !gamerunning) {
             button.addClass('mine');
         }
 
         if (isFlagged(game, i, j)) {
             button.addClass('flagged');
         } else if (isClicked(game, i , j)) {
+            var count = getAdjecentMineCount(game, i , j);
             button.addClass('clicked');             
-            button.addClass('clicked-' + getAdjecentMineCount(game, i , j));
+            button.addClass('clicked-' + count);
+            button.html(count);
+
         }
 
     }
@@ -179,6 +341,10 @@ $(document).ready(function() {
     }
 
     function gameDie() {
+        clearInterval(interval);
+        maintainTime();
+        gamerunning = false;
+        reformater();
         alert('You failed');
     }
 

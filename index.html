@@ -10,10 +10,32 @@
 
 </head>
 <body>
-    Width: <input id="width" value="20" /> </br>
-    Height: <input id="height" value="20" /> </br>
-   Mines: <input id="mines" value="10" /> </br>
-    <button id="generate" >GenerateGame</button>
+
+	<header>
+		<h1>Minesweeper</h1>
+		<div>
+<button id="toggle" >Configure</button><button id="generate" >New Game</button>
+			<div class="info">
+Safeblocks: <span id="safe"></span>  |
+		  		 	Time: <span id="timer"></span>
+			</div>
+		</div>
+		<div class="configure" >
+			Game: 
+			<input type="radio" name="game" value="s" id="small"><label for="small">Small</label><br>
+			<input type="radio" name="game" value="m" id="medium"><label for="medium">Medium</label><br>
+			<input type="radio" name="game" value="l" id="large"><label for="large">Large</label><br>
+			<input type="radio" name="game" value="c" id="custom"><label for="custom">Custom</label><br>
+			<div class="custom">
+			 Width: <input id="width" value="20" /> <br>
+	   		 Height: <input id="height" value="20" /> <br>
+	  		 Mines: <input id="mines" value="10" /> <br>
+	  		</div>
+		</div>
+		
+   
+	</header>
+   
     <main></main>
     
 
