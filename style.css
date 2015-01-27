@@ -6,6 +6,31 @@ body {
 main table{
 	margin: auto;
 }
+
+.buttony {
+	background: #00CCFF;
+	padding: 4px;
+	margin: 2px;
+	border: none;
+	font-size: 14px;
+	line-height: 14px;
+	font-family: Helvetica;
+	text-decoration: none;
+	color: black;
+	-webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+  -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+  box-sizing: border-box; 
+  cursor: pointer;
+  border-spacing: 0;
+  text-align: center;
+  text-indent: 0;
+
+}
+
+.buttony::-moz-focus-inner{
+  border: 0;
+  padding: 0;
+}
  
 .info {
 	float: right;

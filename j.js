@@ -18,6 +18,8 @@ $(document).ready(function() {
     var generatedMines = false;
     var width = 0;
     var height = 0;
+
+    
     $('#generate').click(function() {
         $('.configure').hide();
         width = parseInt($('#width').val());
@@ -57,6 +59,7 @@ $(document).ready(function() {
         configureChoice(this);
     });
 
+    // Sets up the game board.
     function configureChoice(group){
 
         if ($(group).val() == "c") {
@@ -176,6 +179,8 @@ $(document).ready(function() {
 
     $(window).on('resize', reformater);
 
+
+    // builds the mine map and starts the timer
     function firstRun(i, j) {
 
         //give the player a starting chance.
@@ -193,6 +198,7 @@ $(document).ready(function() {
 
     }
 
+    //Runs format on every block
     function reformater() {
         for (var i = 0; i < game.length; i++ ){ 
             for(var j = 0; j < game[i].length; j++) {
@@ -201,14 +207,15 @@ $(document).ready(function() {
         }
     }
 
+    //redraws the timer.
     function maintainTime() {
         var d = new Date();
        var newtime = d.getTime();
        var diff = newtime - time;
        $('#timer').html(Math.round(diff / 1000) + "s");
-
     }
 
+    // Counts clicked correctly.
     function setClicked(game, r, c) {
         if (game[r][c] !== CLICKED) {
             if (isFlagged(game, r, c)) {
@@ -219,6 +226,7 @@ $(document).ready(function() {
         }
     }
 
+    //Checks if winning conditions are met.
     function checkWin() {
         $('#safe').html(oked + "/" + (width * height - mines));
         $('#flags').html(flags + "/" + mines);
@@ -230,6 +238,7 @@ $(document).ready(function() {
         }
     }
 
+    // The clever stuff that works like paint fill.
     function propergate(game, buttons, propergationlist) {
         console.log('propergate', propergationlist);
 
@@ -252,7 +261,6 @@ $(document).ready(function() {
              
                     } else {
                         var trackLeft = j;
-                        var trackRight = j;
                         setClicked(game, i, j);
                         format(game, buttons[i][j]);
                         [-1, 1].forEach(function(direction){
@@ -290,27 +298,32 @@ $(document).ready(function() {
         });
     }
     
+    //Retuns if the user has flagged a cell
     function isFlagged(game, row, column) {
         return game[row][column] == GOODFLAG || game[row][column] == BADFLAG;
     }
 
+    // Counts the number of adjecent mines
     function getAdjecentMineCount(game, row, column) {
        return getAdjecentCount(game, row, column, isMine);
     }
 
+    //Counts the number of good flags in the area.
     function getAdjecentGoodFlagCount(game, row, column) {
         return getAdjecentCount(game, row, column, function(game, r, c) {
             return game[r][c] == GOODFLAG;
         });
     }
 
-     function getAdjecentBadFlagCount(game, row, column) {
+    // Counts the number of bad flags in the area.
+    function getAdjecentBadFlagCount(game, row, column) {
         return getAdjecentCount(game, row, column, function(game, r, c) {
             return game[r][c] == BADFLAG;
         });
     }
 
-    function getAdjecentCount(game, row, column, counter) {
+    //Counts around the adjecent area matching the condition.
+    function getAdjecentCount(game, row, column, conditionFn) {
          var count = 0;
         for (var i = -1; i < 2; i++) {
             for (var j = -1; j< 2; j ++){
@@ -319,7 +332,7 @@ $(document).ready(function() {
                 }
                 var r = row + i;
                 var c = column + j;
-                if (inBounds(game, r, c) && counter(game, r, c)){
+                if (inBounds(game, r, c) && conditionFn(game, r, c)){
                     count ++;
                 }
 
@@ -328,6 +341,7 @@ $(document).ready(function() {
         return count;
     }
 
+    // Checks the index is in the game boundary.
     function inBounds(game, r, c) {
         var maxwidth = game[0].length;
         var maxheight = game.length;
@@ -338,6 +352,7 @@ $(document).ready(function() {
         return false;
     }
 
+    // Makes the cell look nice.
     function format(game, button) {
         var i = button.data('row');
         var j = button.data('column');
@@ -377,14 +392,17 @@ $(document).ready(function() {
 
     }
     
+    //Returns true if it is a mine (flagged or otherwise)
     function isMine(game, row, column) {
         return game[row][column] === MINE || game[row][column] == GOODFLAG;
     }
 
+    //returns if the user has found this to be a good cell.
     function isClicked(game, row, column) {
         return game[row][column] == CLICKED;
     }
 
+    //Tells the user they have failed.
     function gameDie() {
         clearInterval(interval);
         maintainTime();
@@ -393,17 +411,18 @@ $(document).ready(function() {
         alert('You failed');
     }
 
-
+    // Makes the array.
     function Create2DArray(height, width) {
-      var arr = [];
+        var arr = [];
 
-      for (var i=0;i<height;i++) {
-       arr[i] = Array(width);
-       }
+        for (var i=0;i<height;i++) {
+            arr[i] = Array(width);
+        }
 
-       return arr;
+        return arr;
     }
 
+    // Finds places to put mines.
     function fillMines(game, width, height, n) {
 
         while(n > 0){

@@ -26,7 +26,9 @@
 	<header>
 		<h1>Minesweeper</h1>
 		<div>
-<button id="toggle" >Configure</button><button id="generate" >New Game</button>
+			<button class="buttony" id="toggle" >Configure</button>
+			<button class="buttony" id="generate" >New Game</button>
+			<a class="buttony" href="https://github.com/davidjpurser/mines">About</a>
 			<div class="info">
 				Flags: <span id="flags" ></span> |
 				Safeblocks: <span id="safe"></span>  |
@@ -34,7 +36,7 @@
 			</div>
 		</div>
 		<div class="configure" >
-			Game: 
+			Game: <br>
 			<input type="radio" name="game" value="s" id="small"><label for="small">Small</label><br>
 			<input type="radio" name="game" value="m" id="medium"><label for="medium">Medium</label><br>
 			<input type="radio" name="game" value="l" id="large"><label for="large">Large</label><br>
