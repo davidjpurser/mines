@@ -3,11 +3,23 @@
 
 
 <head>
+	<title>Mines by David Purser</title>
+	<meta name="description" content="HTML5/JS/jQuery Mines game.">
 	 <meta charset="UTF-8"> 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script src="http://app.davidpurser.net/jq.js"></script>
     <script src="j.js" ></script>
     <link rel="stylesheet" type="text/css" href="style.css">
+    <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
+  ga('create', 'UA-7335921-19', 'davidpurser.net');
+  ga('require', 'displayfeatures');
+  ga('send', 'pageview');
+
+</script>
 </head>
 <body>
 
@@ -16,8 +28,9 @@
 		<div>
 <button id="toggle" >Configure</button><button id="generate" >New Game</button>
 			<div class="info">
-Safeblocks: <span id="safe"></span>  |
-		  		 	Time: <span id="timer"></span>
+				Flags: <span id="flags" ></span> |
+				Safeblocks: <span id="safe"></span>  |
+		  		Time: <span id="timer"></span>
 			</div>
 		</div>
 		<div class="configure" >
@@ -27,9 +40,9 @@ Safeblocks: <span id="safe"></span>  |
 			<input type="radio" name="game" value="l" id="large"><label for="large">Large</label><br>
 			<input type="radio" name="game" value="c" id="custom"><label for="custom">Custom</label><br>
 			<div class="custom">
-			 Width: <input id="width" value="20" /> <br>
-	   		 Height: <input id="height" value="20" /> <br>
-	  		 Mines: <input id="mines" value="10" /> <br>
+			 Width: <input id="width" /> <br>
+	   		 Height: <input id="height" /> <br>
+	  		 Mines: <input id="mines"  /> <br>
 	  		</div>
 		</div>
 		

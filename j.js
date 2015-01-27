@@ -11,19 +11,24 @@ $(document).ready(function() {
     var buttons = null;
     var oked = 0;
     var mines = 0;
+    var flags = 0;
     var time = 0;
     var interval = null;
     var gamerunning  = false;
+    var generatedMines = false;
+    var width = 0;
+    var height = 0;
     $('#generate').click(function() {
         $('.configure').hide();
-        var width = parseInt($('#width').val());
-        var height = parseInt($('#height').val());
+        width = parseInt($('#width').val());
+        height = parseInt($('#height').val());
         mines = parseInt($('#mines').val());
         oked = 0;
+        flags = 0;
         game = Create2DArray(height, width);
         gamerunning = true;
         buttons = Create2DArray(height, width);
-        game = fillMines(game, width, height, mines);
+        generatedMines = false;
         var table= $('<table />');
         for (var i = 0; i < height; i ++ ){
 
@@ -42,27 +47,26 @@ $(document).ready(function() {
             table.append(row);
         }
         $('main').html('').append(table);
-        checkWin(game);
-
-        var d = new Date();
-        time = d.getTime(); 
-        maintainTime();
-        interval = setInterval(maintainTime, 1000);
-        
+        checkWin();
     });
 
+    configureChoice($('input[name=game]')[0]);
     $('#generate').click();
 
-    $('input[name=game]').on('change',function() {
+    $('input[name=game]').on('change', function() {
+        configureChoice(this);
+    });
 
-        if ($(this).val() == "c") {
+    function configureChoice(group){
+
+        if ($(group).val() == "c") {
             $('.custom').show();
         } else {
             $('.custom').hide();
             var width = 0;
             var height = 0;
             var mines = 0;
-            switch($(this).val()) {
+            switch($(group).val()) {
                 case "s":
                     width = height = 8;
                     mines = 10;
@@ -72,7 +76,7 @@ $(document).ready(function() {
                     mines = 40;
                 break;
                 case "l":
-                    width = 31;
+                    width = 30;
                     height = 16;
                     mines = 99;
                 break;
@@ -81,7 +85,7 @@ $(document).ready(function() {
             $('#height').val(height);
             $('#mines').val(mines);
         }
-    });
+    }
 
     $('#toggle').click(function(){
         $('.configure').toggle();
@@ -90,9 +94,14 @@ $(document).ready(function() {
     $('main').on('click','button', function() {
         if (!gamerunning)
             return false;
+
         var button = $(this);
         var i = button.data('row');
         var j = button.data('column');
+
+        if (!generatedMines)    
+            firstRun(i , j);
+
 
         if (isFlagged(game, i , j)) {
             console.log('cannot click a flagged button');
@@ -128,21 +137,32 @@ $(document).ready(function() {
         }
 
         format(game, button);
-        checkWin(game);
+        checkWin();
     });
 
     $('main').on('contextmenu','button', function() {
-        if (!gamerunning)
+        //Require a game board.
+        if (!gamerunning || !generatedMines)
             return false;
+
+
         var button = $(this);
         var i = button.data('row');
         var j = button.data('column');
+
+        //No point flagging a known good :)
+        if (isClicked(game, i ,j)) {
+            return false;
+        }
         
         if(game[i][j] == GOODFLAG) {
             game[i][j] = MINE;
+            flags--;
         } else if (game[i][j] == BADFLAG){
             game[i][j] = DEFAULT;
+            flags--;
         } else {
+            flags++;
             if (isMine(game, i, j)) {
                  game[i][j] = GOODFLAG;
              } else {
@@ -150,11 +170,28 @@ $(document).ready(function() {
              }
         }
         format(game, button);
-        checkWin(game);
+        checkWin();
         return false;
     });
 
     $(window).on('resize', reformater);
+
+    function firstRun(i, j) {
+
+        //give the player a starting chance.
+        do {
+            game = Create2DArray(height, width);
+            game = fillMines(game, width, height, mines);
+        } while (getAdjecentMineCount(game, i, j) > 0 || isMine(game, i, j));
+        generatedMines = true;
+
+
+        var d = new Date();
+        time = d.getTime(); 
+        maintainTime();
+        interval = setInterval(maintainTime, 1000);
+
+    }
 
     function reformater() {
         for (var i = 0; i < game.length; i++ ){ 
@@ -174,19 +211,23 @@ $(document).ready(function() {
 
     function setClicked(game, r, c) {
         if (game[r][c] !== CLICKED) {
+            if (isFlagged(game, r, c)) {
+                flags--;
+            }
             game[r][c] = CLICKED;
             oked++;
         }
     }
 
-    function checkWin(game) {
-        if (game.length * game[0].length - oked === mines) {
+    function checkWin() {
+        $('#safe').html(oked + "/" + (width * height - mines));
+        $('#flags').html(flags + "/" + mines);
+        if (width * height - oked === mines) {
             clearInterval(interval);
             maintainTime();
             gamerunning = false;
             alert('win');
         }
-        $('#safe').html(oked + "/" + (game.length * game[0].length - mines));
     }
 
     function propergate(game, buttons, propergationlist) {
@@ -315,6 +356,8 @@ $(document).ready(function() {
         button.removeClass();
         button.addClass('gamebutton');
 
+
+
         //For testings
         if (isMine(game, i, j) && !gamerunning) {
             button.addClass('mine');
@@ -328,6 +371,8 @@ $(document).ready(function() {
             button.addClass('clicked-' + count);
             button.html(count);
 
+            var fontSize = (parseInt(button.height()) * 0.8 )+"px";
+            button.css('font-size', fontSize);
         }
 
     }

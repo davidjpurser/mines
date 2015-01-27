@@ -17,18 +17,24 @@ main table{
 	-webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
   -moz-box-sizing: border-box;    /* Firefox, other Gecko */
   box-sizing: border-box; 
+  font-weight: bold;
+  	background-size: contain;
+	background-repeat: no-repeat;
 }
-.mine {
-	
-	border: red solid thick;
-}
+
 .flagged {
 
-	background: red;
+	background-color: red;
+	background-image: url('flag.png');
 }
 
 .clicked {
-	background: #00CCFF;
+	background-color: #00CCFF;
+}
+
+.mine {
+	background-image: url('mine.png');
+
 }
 
 
