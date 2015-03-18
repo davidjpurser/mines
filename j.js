@@ -25,6 +25,9 @@ $(document).ready(function() {
         width = parseInt($('#width').val());
         height = parseInt($('#height').val());
         mines = parseInt($('#mines').val());
+        if (width * height - mines <=9) {
+            alert('This game cannot be played');
+        }
         oked = 0;
         flags = 0;
         game = Create2DArray(height, width);
@@ -143,6 +146,10 @@ $(document).ready(function() {
         checkWin();
     });
 
+    $('body').on('contextmenu','main', function() {
+        return false;
+    });
+    
     $('main').on('contextmenu','button', function() {
         //Require a game board.
         if (!gamerunning || !generatedMines)
@@ -234,6 +241,7 @@ $(document).ready(function() {
             clearInterval(interval);
             maintainTime();
             gamerunning = false;
+            reformater();
             alert('win');
         }
     }
